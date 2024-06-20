@@ -10,7 +10,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdk 34
+    compileSdk 33
     namespace "io.runtime.mcumgr"
 
     defaultConfig {
@@ -29,15 +29,15 @@ android {
         // for now and foreseeable future we intentionally set the build system to emit bytecode that is compatible with
         // java11 so as to ensure that we dont break the "classic xamarin (mono)" toolchain for C# android-java-bindings
         // which employs an outdated version of r8 that can only handle java11 bytecode
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
         // for now and foreseeable future we intentionally set the build system to emit bytecode that is compatible with
         // java11 so as to ensure that we dont break the "classic xamarin (mono)" toolchain for C# android-java-bindings
         // which employs an outdated version of r8 that can only handle java11 bytecode
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 }
 
@@ -78,4 +78,17 @@ if (rootProject.file('gradle/publish-module.gradle').exists()) {
 //Reason: Task ':mcumgr-core:generateMetadataFileForReleasePublication' uses this output of task ':mcumgr-core:androidSourcesJar' without declaring an explicit or implicit dependency. This can lead to incorrect results being produced, depending on what order the tasks are executed.
 afterEvaluate {
     generateMetadataFileForReleasePublication.dependsOn androidSourcesJar
+}
+
+// Task to create the JAR
+task createJar(type: Jar) {
+
+    // archiveClassifier.set('release')
+    from android.sourceSets.main.java.srcDirs
+    // from android.sourceSets.main.kotlin.srcDirs
+
+    from 'build/intermediates/javac/debug'
+
+    include '**/*.class'
+    exclude '**/R.class', '**/R$*.class', '**/BuildConfig.class', '**/Manifest.class'
 }
